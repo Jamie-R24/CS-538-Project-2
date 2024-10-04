@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -80,3 +81,72 @@ plt.ylabel('Transaction Count')
 
 plt.tight_layout()
 plt.show()
+
+#--------------Task 4------------------
+#-----------Data Cleaning--------------
+
+df['trans_date_trans_time'] = pd.to_datetime(df['trans_date_trans_time'])
+df['transaction_hour'] = df['trans_date_trans_time'].dt.hour
+df['transaction_day'] = df['trans_date_trans_time'].dt.day
+df['transaction_day_of_week'] = df['trans_date_trans_time'].dt.dayofweek
+df['transaction_month'] = df['trans_date_trans_time'].dt.month
+
+df = df.dropna()
+
+#function that calculates the distnace with lat & long
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Radius of the Earth
+    phi1 = np.radians(lat1)
+    phi2 = np.radians(lat2)
+    delta_phi = np.radians(lat2 - lat1)
+    delta_lambda = np.radians(lon2 - lon1)
+    
+    a = np.sin(delta_phi / 2) ** 2 + np.cos(phi1) * np.cos(phi2) * np.sin(delta_lambda / 2) ** 2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    
+    distance = R * c
+    return distance
+
+#------------K Nearest Neighbors Classifier--------------------
+df = pd.get_dummies(df, columns = ['category'])
+
+df = df.drop(columns=['Unnamed: 0', 'trans_num', 'first', 'last', 'gender', 'unix_time', 'job', 'dob', 'merchant', 
+                      'trans_date_trans_time', 'street', 'city', 'state', 'city_pop', 'street', 'zip', 'job', 'trans_num', 
+                      'merch_zipcode'])
+
+#For making the sets even
+'''
+fraud = df[df['is_fraud'] == 1]
+nonfraud = df[df['is_fraud'] == 0]
+
+nonfraud = nonfraud.sample(n = fraud.shape[0], random_state=42)
+
+balanced_data = pd.concat([fraud, nonfraud])
+balanced_data = balanced_data.sample(frac=1, random_state=42)
+
+print(balanced_data.shape)
+
+x = balanced_data.drop(columns = ['is_fraud'])
+y = balanced_data['is_fraud']
+'''
+
+#Added Distance to dataset to try and boost performance
+#df['distance'] = haversine(df['lat'], df['long'], df['merch_lat'], df['merch_long'])
+
+#Default Classifier
+x = df.drop(columns = ['is_fraud'])
+y = df['is_fraud']
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state=42)
+
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
+
+knn = KNeighborsClassifier(n_neighbors = 5)
+knn.fit(x_train, y_train)
+
+y_pred = knn.predict(x_test)
+
+print(classification_report(y_test, y_pred))
+#--------------------------------------------------
