@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -113,6 +114,8 @@ df = pd.get_dummies(df, columns = ['category'])
 df = df.drop(columns=['Unnamed: 0', 'trans_num', 'first', 'last', 'gender', 'unix_time', 'job', 'dob', 'merchant', 
                       'trans_date_trans_time', 'street', 'city', 'state', 'city_pop', 'street', 'zip', 'job', 'trans_num', 
                       'merch_zipcode'])
+#Added Distance to dataset to try and boost performance
+df['distance'] = haversine(df['lat'], df['long'], df['merch_lat'], df['merch_long'])
 
 #For making the sets even
 '''
@@ -129,9 +132,6 @@ print(balanced_data.shape)
 x = balanced_data.drop(columns = ['is_fraud'])
 y = balanced_data['is_fraud']
 '''
-
-#Added Distance to dataset to try and boost performance
-#df['distance'] = haversine(df['lat'], df['long'], df['merch_lat'], df['merch_long'])
 
 #Default Classifier
 x = df.drop(columns = ['is_fraud'])
@@ -150,3 +150,10 @@ y_pred = knn.predict(x_test)
 
 print(classification_report(y_test, y_pred))
 #--------------------------------------------------
+
+#----------Random Forest Classifier----------------
+rf = RandomForestClassifier(n_estimators = 250, random_state = 42)
+rf.fit(x_train, y_train)
+y_pred_rf = rf.predict(x_test)
+
+print(classification_report(y_test, y_pred_rf))
