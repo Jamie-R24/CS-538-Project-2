@@ -12,6 +12,14 @@ import seaborn as sns
 df = pd.read_csv('credit_card_transactions.csv')
 df = df.head(1296675)
 
+'''
+This .py file contains the analysis of total transactions by merchant group
+and total transaction amounts spent by merchant group. It also contains the code
+for the analysis of travel spending month by month. 
+
+The KNN Classifier and Random Forest Classifier are contained in the code below as well. 
+'''
+
 #------------------------------
 #-------- Task 2 --------------
 #------------------------------
